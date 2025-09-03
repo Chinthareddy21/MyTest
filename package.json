@@ -1,0 +1,43 @@
+{
+  "name": "mytest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "allure:open": "allure serve",
+    "test:Chrome": "npx playwright test --project=chromium --headed",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:report": "npx playwright show-report",
+    "test:API": "npx playwright test tests/API --project=chromium",
+    "test:Firefox": "npx playwright test --project=firefox --headed",
+    "test:Webkit": "npx playwright test --project=webkit --headed",
+    "test:Parallel": "npx playwright test --workers=3",
+    "test:Serial": "npx playwright test --workers=1",
+    "test:Sanity": "npx playwright test --grep @sanity",
+    "test:Regression": "npx playwright test --grep @regression"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chinthareddy21/MyTest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Chinthareddy21/MyTest/issues"
+  },
+  "homepage": "https://github.com/Chinthareddy21/MyTest#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.3.0",
+    "allure-playwright": "^3.3.3"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "exceljs": "^4.4.0",
+    "rimraf": "^6.0.1"
+  }
+}

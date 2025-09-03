@@ -1,0 +1,2 @@
+Navigation to https://playwright.dev/ was successful.
+Status code is 200.

@@ -1,0 +1,317 @@
+{
+  "testSuite": "Navigation Tests",
+  "runs": [
+    {
+      "runStartTime": "2025-09-03T16:41:04.659Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:41:04.658Z",
+          "systemInfo": "win32",
+          "browser": "webkit",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:41:03.770Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:41:03.769Z",
+          "systemInfo": "win32",
+          "browser": "webkit",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:41:01.471Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:41:01.470Z",
+          "systemInfo": "win32",
+          "browser": "firefox",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:41:00.554Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:41:00.552Z",
+          "systemInfo": "win32",
+          "browser": "firefox",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:40:57.511Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:40:57.510Z",
+          "systemInfo": "win32",
+          "browser": "chromium",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:40:56.731Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:40:56.730Z",
+          "systemInfo": "win32",
+          "browser": "chromium",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:39:27.376Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:39:27.375Z",
+          "systemInfo": "win32",
+          "browser": "webkit",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:39:26.394Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:39:26.392Z",
+          "systemInfo": "win32",
+          "browser": "webkit",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:39:24.101Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:39:24.100Z",
+          "systemInfo": "win32",
+          "browser": "firefox",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:39:23.228Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:39:23.226Z",
+          "systemInfo": "win32",
+          "browser": "firefox",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:39:19.661Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:39:19.661Z",
+          "systemInfo": "win32",
+          "browser": "chromium",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:39:18.597Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:39:18.594Z",
+          "systemInfo": "win32",
+          "browser": "chromium",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:37.532Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:37.531Z",
+          "systemInfo": "win32",
+          "browser": "webkit",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:36.693Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:36.691Z",
+          "systemInfo": "win32",
+          "browser": "webkit",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:33.048Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:33.048Z",
+          "systemInfo": "win32",
+          "browser": "firefox",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:31.594Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:31.592Z",
+          "systemInfo": "win32",
+          "browser": "firefox",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:28.221Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:28.220Z",
+          "systemInfo": "win32",
+          "browser": "chromium",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:27.100Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:27.098Z",
+          "systemInfo": "win32",
+          "browser": "chromium",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:10.507Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:10.506Z",
+          "systemInfo": "win32",
+          "browser": "webkit",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:09.488Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:09.486Z",
+          "systemInfo": "win32",
+          "browser": "webkit",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:05.574Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:05.573Z",
+          "systemInfo": "win32",
+          "browser": "firefox",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:04.612Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:04.610Z",
+          "systemInfo": "win32",
+          "browser": "firefox",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:01.573Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:01.573Z",
+          "systemInfo": "win32",
+          "browser": "chromium",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    {
+      "runStartTime": "2025-09-03T16:38:00.706Z",
+      "testResults": [
+        {
+          "timestamp": "2025-09-03T16:38:00.705Z",
+          "systemInfo": "win32",
+          "browser": "chromium",
+          "url": "https://playwright.dev/",
+          "status": 200,
+          "success": true
+        }
+      ]
+    }
+  ]
+}
