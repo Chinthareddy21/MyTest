@@ -24,7 +24,7 @@ export default defineConfig({
   },
   /* Run tests in files in parallel */
 
-  globalSetup: require.resolve('./global-setup'),
+  globalSetup: require.resolve('./global-setUp'),
   globalTeardown: require.resolve('./global-tearDown'),
 
   /* Retry on CI only */
