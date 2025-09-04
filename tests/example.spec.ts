@@ -8,13 +8,13 @@ test.describe('Example Test Suite', () => {
     webActions = new WebActions(page);
     await webActions.navigateToUrl('https://playwright.dev/');
   });
-  test('has title', async ({ page }) => {
+  test('has title @sanity', async ({ page }) => {
 
     // Expect a title "to contain" a substring.
     await expect(page).toHaveTitle(/Playwright/);
   });
 
-  test('get started link', async ({ page }) => {
+  test('get started link @regression', async ({ page }) => {
 
     // Click the get started link.
     await page.getByRole('link', { name: 'Get started' }).click();
