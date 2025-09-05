@@ -1,241 +1,69 @@
-name: Directory-Based Playwright Tests with Teams Report
+name: Playwright Tests
 
 on:
-  schedule:
-    - cron: "0 8 * * *"   # 10 AM SAST (08:00 UTC) → Sanity
-    - cron: "0 20 * * *"  # 10 PM SAST (20:00 UTC) → Regression
-  workflow_dispatch:
-    inputs:
-      test_type:
-        description: "Test type to run"
-        required: true
-        default: "sanity"
-        type: choice
-        options:
-          - sanity
-          - regression
+  workflow_dispatch:   # manual trigger
+  schedule:            # scheduled trigger (UTC time)
+    - cron: "0 6 * * *"   # runs every day at 06:00 UTC
 
 jobs:
-  sanity-tests:
-    if: (github.event_name == 'schedule' && github.event.schedule == '0 8 * * *') || (github.event_name == 'workflow_dispatch' && github.event.inputs.test_type == 'sanity')
+  sanity:
+    name: Run Sanity Tests
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.40.0-focal
-      options: --user root
-    env:
-      TEST_TYPE: Sanity
+      image: mcr.microsoft.com/playwright:v1.49.0-jammy # official playwright docker
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Install dependencies and tools
-        run: |
-          npm ci
-          apt-get update && apt-get install -y jq curl
+      - name: Run Sanity tests
+        run: npx playwright test --grep @sanity --reporter=list,json
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run Sanity Tests
-        id: test_run
-        run: |
-          echo "Running sanity tests with grep"
-          npx playwright test --grep @sanity --reporter=json > report.json || true
-
-          if [ -s report.json ] && jq empty report.json 2>/dev/null; then
-            PASSED=$(jq '[.suites[]?.specs[]?.tests[]? | select(.status=="passed")] | length' report.json || echo "0")
-            FAILED=$(jq '[.suites[]?.specs[]?.tests[]? | select(.status=="failed")] | length' report.json || echo "0")
-            SKIPPED=$(jq '[.suites[]?.specs[]?.tests[]? | select(.status=="skipped")] | length' report.json || echo "0")
-            TOTAL=$((PASSED + FAILED + SKIPPED))
-          else
-            PASSED=0; FAILED=0; SKIPPED=0; TOTAL=0
-          fi
-
-          if [ $TOTAL -eq 0 ]; then
-            STATUS="No Tests Found"
-            EXIT_CODE=1
-          elif [ $FAILED -eq 0 ]; then
-            STATUS="Success"
-            EXIT_CODE=0
-          else
-            STATUS="Failed"
-            EXIT_CODE=1
-          fi
-
-          echo "PASSED=$PASSED" >> $GITHUB_ENV
-          echo "FAILED=$FAILED" >> $GITHUB_ENV
-          echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
-          echo "TOTAL=$TOTAL" >> $GITHUB_ENV
-          echo "STATUS=$STATUS" >> $GITHUB_ENV
-          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
-
-          exit $EXIT_CODE
-        continue-on-error: true
-
-      - name: Send Teams Report
+      - name: Upload Playwright Report
         if: always()
-        env:
-          PASSED: ${{ env.PASSED }}
-          FAILED: ${{ env.FAILED }}
-          SKIPPED: ${{ env.SKIPPED }}
-          TOTAL: ${{ env.TOTAL }}
-          STATUS: ${{ env.STATUS }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanity-report
+          path: playwright-report
+
+      - name: Notify Microsoft Teams
+        if: always()
         run: |
-          if [ "${STATUS}" = "Success" ]; then
-            COLOR="00FF00"
-          elif [ "${STATUS}" = "No Tests Found" ]; then
-            COLOR="FFA500"
-          else
-            COLOR="FF0000"
-          fi
+          STATUS="✅ Passed"
+          if [ "${{ job.status }}" != "success" ]; then STATUS="❌ Failed"; fi
+          curl -H 'Content-Type: application/json' \
+            -d "{\"text\":\"Sanity Tests: $STATUS\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_RUN_URL\"}" \
+            ${{ secrets.MS_TEAMS_WEBHOOK }}
 
-          TIMESTAMP=$(TZ='Africa/Johannesburg' date '+%Y-%m-%d %H:%M:%S SAST')
-          WORKFLOW="Sanity Playwright Test Report"
-          RUN_LINK="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-
-          curl -H "Content-Type: application/json" \
-               -d "{
-                 \"@type\": \"MessageCard\",
-                 \"@context\": \"http://schema.org/extensions\",
-                 \"summary\": \"${WORKFLOW}\",
-                 \"themeColor\": \"${COLOR}\",
-                 \"title\": \"${WORKFLOW}\",
-                 \"sections\": [{
-                   \"activityTitle\": \"Test Execution Summary\",
-                   \"activitySubtitle\": \"Repository: ${GITHUB_REPOSITORY}\",
-                   \"facts\": [
-                     {\"name\": \"Overall Status:\", \"value\": \"${STATUS}\"},
-                     {\"name\": \"Total Tests:\", \"value\": \"${TOTAL}\"},
-                     {\"name\": \"Passed:\", \"value\": \"${PASSED}\"},
-                     {\"name\": \"Failed:\", \"value\": \"${FAILED}\"},
-                     {\"name\": \"Skipped:\", \"value\": \"${SKIPPED}\"},
-                     {\"name\": \"Execution Time:\", \"value\": \"${TIMESTAMP}\"},
-                     {\"name\": \"Triggered by:\", \"value\": \"${GITHUB_ACTOR}\"},
-                     {\"name\": \"Branch:\", \"value\": \"${GITHUB_REF_NAME}\"}
-                   ],
-                   \"markdown\": true
-                 }],
-                 \"potentialAction\": [{
-                   \"@type\": \"OpenUri\",
-                   \"name\": \"View Workflow Run\",
-                   \"targets\": [{\"os\": \"default\", \"uri\": \"${RUN_LINK}\"}]
-                 }]
-               }" \
-               "${{ secrets.TEAMS_WEBHOOK_URL }}"
-
-  regression-tests:
-    if: (github.event_name == 'schedule' && github.event.schedule == '0 20 * * *') || (github.event_name == 'workflow_dispatch' && github.event.inputs.test_type == 'regression')
+  regression:
+    name: Run Regression Tests
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.40.0-focal
-      options: --user root
-    env:
-      TEST_TYPE: Regression
+      image: mcr.microsoft.com/playwright:v1.49.0-jammy
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Install dependencies and tools
-        run: |
-          npm ci
-          apt-get update && apt-get install -y jq curl
+      - name: Run Regression tests
+        run: npx playwright test --grep @regression --reporter=list,json
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run Regression Tests
-        id: test_run
-        run: |
-          echo "Running regression tests with grep"
-          npx playwright test --grep @regression --reporter=json > report.json || true
-
-          if [ -s report.json ] && jq empty report.json 2>/dev/null; then
-            PASSED=$(jq '[.suites[]?.specs[]?.tests[]? | select(.status=="passed")] | length' report.json || echo "0")
-            FAILED=$(jq '[.suites[]?.specs[]?.tests[]? | select(.status=="failed")] | length' report.json || echo "0")
-            SKIPPED=$(jq '[.suites[]?.specs[]?.tests[]? | select(.status=="skipped")] | length' report.json || echo "0")
-            TOTAL=$((PASSED + FAILED + SKIPPED))
-          else
-            PASSED=0; FAILED=0; SKIPPED=0; TOTAL=0
-          fi
-
-          if [ $TOTAL -eq 0 ]; then
-            STATUS="No Tests Found"
-            EXIT_CODE=1
-          elif [ $FAILED -eq 0 ]; then
-            STATUS="Success"
-            EXIT_CODE=0
-          else
-            STATUS="Failed"
-            EXIT_CODE=1
-          fi
-
-          echo "PASSED=$PASSED" >> $GITHUB_ENV
-          echo "FAILED=$FAILED" >> $GITHUB_ENV
-          echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
-          echo "TOTAL=$TOTAL" >> $GITHUB_ENV
-          echo "STATUS=$STATUS" >> $GITHUB_ENV
-          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
-
-          exit $EXIT_CODE
-        continue-on-error: true
-
-      - name: Send Teams Report
+      - name: Upload Playwright Report
         if: always()
-        env:
-          PASSED: ${{ env.PASSED }}
-          FAILED: ${{ env.FAILED }}
-          SKIPPED: ${{ env.SKIPPED }}
-          TOTAL: ${{ env.TOTAL }}
-          STATUS: ${{ env.STATUS }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-report
+          path: playwright-report
+
+      - name: Notify Microsoft Teams
+        if: always()
         run: |
-          if [ "${STATUS}" = "Success" ]; then
-            COLOR="00FF00"
-          elif [ "${STATUS}" = "No Tests Found" ]; then
-            COLOR="FFA500"
-          else
-            COLOR="FF0000"
-          fi
-
-          TIMESTAMP=$(TZ='Africa/Johannesburg' date '+%Y-%m-%d %H:%M:%S SAST')
-          WORKFLOW="Regression Playwright Test Report"
-          RUN_LINK="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-
-          curl -H "Content-Type: application/json" \
-               -d "{
-                 \"@type\": \"MessageCard\",
-                 \"@context\": \"http://schema.org/extensions\",
-                 \"summary\": \"${WORKFLOW}\",
-                 \"themeColor\": \"${COLOR}\",
-                 \"title\": \"${WORKFLOW}\",
-                 \"sections\": [{
-                   \"activityTitle\": \"Test Execution Summary\",
-                   \"activitySubtitle\": \"Repository: ${GITHUB_REPOSITORY}\",
-                   \"facts\": [
-                     {\"name\": \"Overall Status:\", \"value\": \"${STATUS}\"},
-                     {\"name\": \"Total Tests:\", \"value\": \"${TOTAL}\"},
-                     {\"name\": \"Passed:\", \"value\": \"${PASSED}\"},
-                     {\"name\": \"Failed:\", \"value\": \"${FAILED}\"},
-                     {\"name\": \"Skipped:\", \"value\": \"${SKIPPED}\"},
-                     {\"name\": \"Execution Time:\", \"value\": \"${TIMESTAMP}\"},
-                     {\"name\": \"Triggered by:\", \"value\": \"${GITHUB_ACTOR}\"},
-                     {\"name\": \"Branch:\", \"value\": \"${GITHUB_REF_NAME}\"}
-                   ],
-                   \"markdown\": true
-                 }],
-                 \"potentialAction\": [{
-                   \"@type\": \"OpenUri\",
-                   \"name\": \"View Workflow Run\",
-                   \"targets\": [{\"os\": \"default\", \"uri\": \"${RUN_LINK}\"}]
-                 }]
-               }" \
-               "${{ secrets.TEAMS_WEBHOOK_URL }}"
+          STATUS="✅ Passed"
+          if [ "${{ job.status }}" != "success" ]; then STATUS="❌ Failed"; fi
+          curl -H 'Content-Type: application/json' \
+            -d "{\"text\":\"Regression Tests: $STATUS\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_RUN_URL\"}" \
+            ${{ secrets.MS_TEAMS_WEBHOOK }}
