@@ -17,9 +17,10 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
+        
       - name: Run Sanity tests
-        run: npx playwright test --grep @sanity --reporter=json > sanity-results.json
+        run: npx playwright test --grep @sanity --reporter=json > sanity-results.json || true
+
 
       - name: Parse results
         id: results
