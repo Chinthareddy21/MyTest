@@ -1,9 +1,9 @@
 name: Playwright Tests
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * *"
+  workflow_dispatch:   # manual trigger
+  schedule:            # scheduled trigger (UTC time)
+    - cron: "0 6 * * *"   # runs every day at 06:00 UTC
 
 jobs:
   sanity:
@@ -16,17 +16,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: npm install
-        
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
       - name: Run Sanity tests
         run: npx playwright test --grep @sanity --reporter=json > sanity-results.json || true
-
 
       - name: Parse results
         id: results
         run: |
-          PASSED=$(jq '.suites[].specs[].tests[] | select(.status=="passed") | .status' sanity-results.json | wc -l)
-          FAILED=$(jq '.suites[].specs[].tests[] | select(.status=="failed") | .status' sanity-results.json | wc -l)
+          PASSED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="passed")) | length' sanity-results.json)
+          FAILED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="failed")) | length' sanity-results.json)
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
           echo "failed=$FAILED" >> $GITHUB_OUTPUT
 
@@ -44,7 +48,7 @@ jobs:
           if [ "${{ steps.results.outputs.failed }}" != "0" ]; then STATUS="❌ Failed"; fi
           curl -H 'Content-Type: application/json' \
             -d "{
-                  \"text\": \"Sanity Tests: $STATUS\n✅ Passed: ${{ steps.results.outputs.passed }}\n❌ Failed: ${{ steps.results.outputs.failed }}\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_RUN_URL\"
+                  \"text\": \"Sanity Tests: $STATUS\n✅ Passed: ${{ steps.results.outputs.passed }}\n❌ Failed: ${{ steps.results.outputs.failed }}\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"
                 }" \
             ${{ secrets.MS_TEAMS_WEBHOOK }}
 
@@ -58,16 +62,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Run Regression tests
-        run: npx playwright test --grep @regression --reporter=json > regression-results.json
+        run: npx playwright test --grep @regression --reporter=json > regression-results.json || true
 
       - name: Parse results
         id: results
         run: |
-          PASSED=$(jq '.suites[].specs[].tests[] | select(.status=="passed") | .status' regression-results.json | wc -l)
-          FAILED=$(jq '.suites[].specs[].tests[] | select(.status=="failed") | .status' regression-results.json | wc -l)
+          PASSED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="passed")) | length' regression-results.json)
+          FAILED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="failed")) | length' regression-results.json)
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
           echo "failed=$FAILED" >> $GITHUB_OUTPUT
 
@@ -85,6 +94,6 @@ jobs:
           if [ "${{ steps.results.outputs.failed }}" != "0" ]; then STATUS="❌ Failed"; fi
           curl -H 'Content-Type: application/json' \
             -d "{
-                  \"text\": \"Regression Tests: $STATUS\n✅ Passed: ${{ steps.results.outputs.passed }}\n❌ Failed: ${{ steps.results.outputs.failed }}\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_RUN_URL\"
+                  \"text\": \"Regression Tests: $STATUS\n✅ Passed: ${{ steps.results.outputs.passed }}\n❌ Failed: ${{ steps.results.outputs.failed }}\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"
                 }" \
             ${{ secrets.MS_TEAMS_WEBHOOK }}
