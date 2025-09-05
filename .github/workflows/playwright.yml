@@ -1,16 +1,16 @@
 name: Playwright Tests
 
 on:
-  workflow_dispatch:   # manual trigger
-  schedule:            # scheduled trigger (UTC time)
-    - cron: "0 6 * * *"   # runs every day at 06:00 UTC
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
 
 jobs:
   sanity:
     name: Run Sanity Tests
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.49.0-jammy # official playwright docker
+      image: mcr.microsoft.com/playwright:v1.49.0-jammy
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,7 +19,15 @@ jobs:
         run: npm ci
 
       - name: Run Sanity tests
-        run: npx playwright test --grep @sanity --reporter=list,json
+        run: npx playwright test --grep @sanity --reporter=json > sanity-results.json
+
+      - name: Parse results
+        id: results
+        run: |
+          PASSED=$(jq '.suites[].specs[].tests[] | select(.status=="passed") | .status' sanity-results.json | wc -l)
+          FAILED=$(jq '.suites[].specs[].tests[] | select(.status=="failed") | .status' sanity-results.json | wc -l)
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
 
       - name: Upload Playwright Report
         if: always()
@@ -32,9 +40,11 @@ jobs:
         if: always()
         run: |
           STATUS="✅ Passed"
-          if [ "${{ job.status }}" != "success" ]; then STATUS="❌ Failed"; fi
+          if [ "${{ steps.results.outputs.failed }}" != "0" ]; then STATUS="❌ Failed"; fi
           curl -H 'Content-Type: application/json' \
-            -d "{\"text\":\"Sanity Tests: $STATUS\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_RUN_URL\"}" \
+            -d "{
+                  \"text\": \"Sanity Tests: $STATUS\n✅ Passed: ${{ steps.results.outputs.passed }}\n❌ Failed: ${{ steps.results.outputs.failed }}\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_RUN_URL\"
+                }" \
             ${{ secrets.MS_TEAMS_WEBHOOK }}
 
   regression:
@@ -50,7 +60,15 @@ jobs:
         run: npm ci
 
       - name: Run Regression tests
-        run: npx playwright test --grep @regression --reporter=list,json
+        run: npx playwright test --grep @regression --reporter=json > regression-results.json
+
+      - name: Parse results
+        id: results
+        run: |
+          PASSED=$(jq '.suites[].specs[].tests[] | select(.status=="passed") | .status' regression-results.json | wc -l)
+          FAILED=$(jq '.suites[].specs[].tests[] | select(.status=="failed") | .status' regression-results.json | wc -l)
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
 
       - name: Upload Playwright Report
         if: always()
@@ -63,7 +81,9 @@ jobs:
         if: always()
         run: |
           STATUS="✅ Passed"
-          if [ "${{ job.status }}" != "success" ]; then STATUS="❌ Failed"; fi
+          if [ "${{ steps.results.outputs.failed }}" != "0" ]; then STATUS="❌ Failed"; fi
           curl -H 'Content-Type: application/json' \
-            -d "{\"text\":\"Regression Tests: $STATUS\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_RUN_URL\"}" \
+            -d "{
+                  \"text\": \"Regression Tests: $STATUS\n✅ Passed: ${{ steps.results.outputs.passed }}\n❌ Failed: ${{ steps.results.outputs.failed }}\nWorkflow: $GITHUB_WORKFLOW\nRun: $GITHUB_RUN_URL\"
+                }" \
             ${{ secrets.MS_TEAMS_WEBHOOK }}
