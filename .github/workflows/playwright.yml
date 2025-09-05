@@ -26,6 +26,9 @@ jobs:
       - name: Run Sanity tests
         run: npx playwright test --grep @sanity --reporter=json > sanity-results.json || true
 
+      - name: Install jq
+        run: apt-get update && apt-get install -y jq
+
       - name: Parse results
         id: results
         run: |
@@ -71,6 +74,9 @@ jobs:
 
       - name: Run Regression tests
         run: npx playwright test --grep @regression --reporter=json > regression-results.json || true
+
+      - name: Install jq
+        run: apt-get update && apt-get install -y jq
 
       - name: Parse results
         id: results
