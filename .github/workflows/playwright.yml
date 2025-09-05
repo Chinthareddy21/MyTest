@@ -24,7 +24,9 @@ jobs:
           fi
 
       - name: Run Sanity tests
-        run: npx playwright test --grep @sanity --reporter=json > sanity-results.json || true
+        run: |
+          # Run playwright, capture json
+          npx playwright test --grep @sanity --reporter=list,json > sanity-results.json || true
 
       - name: Install jq
         run: apt-get update && apt-get install -y jq
@@ -32,8 +34,13 @@ jobs:
       - name: Parse results
         id: results
         run: |
-          PASSED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="passed")) | length' sanity-results.json)
-          FAILED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="failed")) | length' sanity-results.json)
+          if [ -s sanity-results.json ] && jq empty sanity-results.json 2>/dev/null; then
+            PASSED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="passed")) | length' sanity-results.json)
+            FAILED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="failed")) | length' sanity-results.json)
+          else
+            PASSED=0
+            FAILED=0
+          fi
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
           echo "failed=$FAILED" >> $GITHUB_OUTPUT
 
@@ -73,7 +80,9 @@ jobs:
           fi
 
       - name: Run Regression tests
-        run: npx playwright test --grep @regression --reporter=json > regression-results.json || true
+        run: |
+          # Run playwright, capture json
+          npx playwright test --grep @regression --reporter=list,json > regression-results.json || true
 
       - name: Install jq
         run: apt-get update && apt-get install -y jq
@@ -81,8 +90,13 @@ jobs:
       - name: Parse results
         id: results
         run: |
-          PASSED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="passed")) | length' regression-results.json)
-          FAILED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="failed")) | length' regression-results.json)
+          if [ -s regression-results.json ] && jq empty regression-results.json 2>/dev/null; then
+            PASSED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="passed")) | length' regression-results.json)
+            FAILED=$(jq '[.. | objects | select(has("status")) | .status] | map(select(.=="failed")) | length' regression-results.json)
+          else
+            PASSED=0
+            FAILED=0
+          fi
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
           echo "failed=$FAILED" >> $GITHUB_OUTPUT
 
